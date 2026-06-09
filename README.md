@@ -13,7 +13,7 @@ cd YOUR_REPO_NAME
 
 ```bash
 # Додаємо репозиторій викладача як джерело оновлень
-git remote add upstream https://github.com/dkovalenko/ai-engineering-course.git
+git remote add upstream https://github.com:dkovalenko/ai_engineering_II.git
 
 # Завантажуємо всі дані від викладача
 git fetch upstream
