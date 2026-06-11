@@ -1,48 +1,47 @@
-# Домашнє завдання №0: Знайомство
+# Homework #0: Introduction
 
-> **Передумова:** перед виконанням домашок налаштуйте власний Git-репозиторій за інструкцією [`README.md`](../../README.md).
+> **Prerequisite:** before doing the homework, set up your own Git repository following the instructions in [`README.md`](../../README.md).
 
-## 1. Банк ідей
+## 1. Idea Bank
 
-Напишіть 3 кейси де б ви хотіли застосувати АІ у вашій роботі або власному проекті. Це можуть бути додаткові фічі або повноцінні продукти. Опишіть коротко ідею і суть рішення (1 абзац) — так само як би ви пітчили ідею вашим колегам чи не технічним слухачам.
+Write 3 cases where you would like to apply AI in your work or your own project. These can be additional features or full-fledged products. Briefly describe the idea and the essence of the solution (1 paragraph) — just as you would pitch the idea to your colleagues or to a non-technical audience.
 
-## 2. Дослідження ринку
+## 2. Market Research
 
-Знайдіть на LinkedIn або іншому сайті з позиціями 2-3 вакансії за запитом `"AI Engineer"` або `"LLM Engineer"` які вас цікавлять. Випишіть, над якими з вимог вам треба попрацювати.
+Find 2-3 job openings on LinkedIn or another job site by searching for `"AI Engineer"` or `"LLM Engineer"` that interest you. Write down which of the requirements you need to work on.
 
 ---
 
 ## 3. Second Brain
 
-Протягом курсу ви будете отримувати багато інформації — моделі, патерни, інструменти, помилки, інсайти. Більшість з цього забувається без системи. Second Brain — це personal knowledge base, яку ви наповнюватимете кожну лекцію і до кінця курсу матимете готовий артефакт для роботи і ресерчу.
+Throughout the course you will receive a lot of information — models, patterns, tools, mistakes, insights. Most of this is forgotten without a system. A Second Brain is a personal knowledge base that you will populate every lecture, and by the end of the course you will have a ready-made artifact for work and research.
 
-Почитати більше про те що це і яку проблему вирішує: https://www.ronforbes.com/blog/building-your-ai-second-brain
+Read more about what it is and what problem it solves: https://www.ronforbes.com/blog/building-your-ai-second-brain
 
-**Варіанти як створити:**
+**Options for how to create it:**
 
-- **a. З нуля** — виконати `second_brain_init.md` в Claude/Cursor у директорії де ви хочете створити second brain
-- **b. Взяти готове рішення, наприклад** — https://github.com/khoj-ai/khoj. Ви можете використати будь-який інший аналогічний тул.
+- **a. From scratch** — run `second_brain_init.md` in Claude/Cursor in the directory where you want to create your second brain
+- **b. Use a ready-made solution, for example** — https://github.com/khoj-ai/khoj. You can use any other similar tool.
 
-Після створення можна працювати з текстовими файлами через [Obsidian](https://obsidian.md) або будь-який інший текстовий редактор.
+After creating it, you can work with the text files via [Obsidian](https://obsidian.md) or any other text editor.
 
-**Перший запис.** Одразу після налаштування створіть файл `01_Projects/ai-engineering-course/lecture-00.md` і заповніть:
+**First entry.** Immediately after setup, create the file `01_Projects/ai-engineering-course/lecture-00.md` and fill it in:
 
 ```markdown
 ---
 tags: [course, lecture]
 date: YYYY-MM-DD
 ---
-# Лекція 0 — Знайомство
+# Lecture 0 — Introduction
 
-## Навіщо я тут
-(Яку конкретну проблему на роботі або в проекті хочу вирішити за допомогою AI?)
+## Why I'm here
+(What specific problem at work or in a project do I want to solve with AI?)
 
-## Мої 3 AI-кейси
-(Перенесіть сюди ідеї з пункту 1 домашки)
+## My 3 AI cases
+(Transfer the ideas from homework item 1 here)
 
-## Вакансії — що треба підтягнути
-(З пункту 2 домашки — конкретні скіли)
+## Job openings — what I need to brush up on
+(From homework item 2 — specific skills)
 ```
 
-Цей файл — точка відліку. До нього можна повернутись на випуску і побачити, наскільки далеко просунулись.
-
+This file is the starting point. You can return to it at graduation and see how far you've come.
