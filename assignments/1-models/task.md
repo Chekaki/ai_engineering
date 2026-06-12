@@ -66,7 +66,18 @@
 
 Перед кожним запуском `starter.py` зміни:
 - `CASE_NAME` → назву поточного кейсу (наприклад, `"case1_data_extraction"`)
-- `PROMPT` → промпт кейсу
+- `SYSTEM_PROMPT` → інструкція для моделі: що робити, яким має бути формат відповіді
+- `PROMPT` → контекст або запитання: текст логу, правила, статтю — те над чим модель працює
+
+Приклад для Кейсу 1:
+```python
+SYSTEM_PROMPT = "Extract the following fields into a valid JSON array (one object per log line): timestamp, status_code, request_time_ms, error_type, client_ip. If a field is missing, use null. Skip non-log lines like [SYSTEM], [USER_NOTE], [DEBUG]."
+
+PROMPT = """[SYSTEM] Session started at 2026-02-27T14:10:00Z
+2026-02-27 14:10:05.123 INFO  192.168.1.15 GET /api/v1/user/profile 200 45ms
+...(весь лог)
+"""
+```
 
 **Загальні налаштування для всіх тестів:**
 * `Top-P`: **0.9** (фіксовано).
