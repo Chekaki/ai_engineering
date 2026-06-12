@@ -49,7 +49,8 @@ CASE_NAME = "case1_data_extraction"
 # (Кейс 5 = Capability Ladder — запускай ladder.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
-PROMPT = "YOUR PROMPT HERE"
+SYSTEM_PROMPT = ""  # необов'язково — інструкція для моделі (що робити, формат відповіді)
+PROMPT = "YOUR PROMPT HERE"  # контекст або запитання (текст логу, правила, тощо)
 
 # ── Large models (хмара) — розкоментуй один ──────────────────────────────────
 LARGE_MODELS = [
@@ -75,12 +76,17 @@ TEMPERATURES = [0.1, 0.7, 1.2]
 SEED = 42
 
 
-def ask(model: str, prompt: str, temperature: float = 0.7, seed: int | None = SEED):
+def ask(model: str, prompt: str, temperature: float = 0.7, seed: int | None = SEED, system: str = ""):
     """Returns (text, elapsed_s, cost_usd_or_none)."""
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
     start = time.time()
     resp = completion(
         model=model,
-        messages=[{"role": "user", "content": prompt}],
+        messages=messages,
         temperature=temperature,
         seed=seed,
         max_tokens=1024,
@@ -121,7 +127,7 @@ def main():
             print(f"[{tier}] Model: {short_name}  |  T={temp}")
             print("─" * 70)
             try:
-                result, elapsed, cost = ask(model, PROMPT, temp)
+                result, elapsed, cost = ask(model, PROMPT, temp, system=SYSTEM_PROMPT)
                 cost_str = f"${cost:.6f}" if cost is not None else "n/a"
                 print(f"Time: {elapsed:.1f}s | Cost: {cost_str}")
                 print(result)
