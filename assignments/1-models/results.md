@@ -11,18 +11,20 @@
 
 | Модель | Провайдер | Тип | Context Window | Input $/1M | Output $/1M | Модальності | Vocab size | Architecture |
 |---|---|---|---|---|---|---|---|---|
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
-| | | | | | | | | |
+| gpt-4o | openai | proprietary | 128K | 2.50 | 10.00 | Multimodal | ~200K | MoE |
+| gpt-4o-mini | openai | proprietary | 128K | 0.15 | 0.60 | Multimodal | ~200K | MoE / Dense |
+| claude-haiku-4.5 | anthropic | proprietary | 200K | 1.00 | 5.00 | Multimodal | 65K | MoE? |
+| gemma-4-31b-it | google | open-weights | 262K | 0.12 | 0.35 | Multimodal | ~262K | Dense |
+| llama-4-maverick | meta-llama | open-weights | 1M | 0.15 | 0.60 | Multimodal | ~202K | MoE |
+| Qwen3-30B-A3B | Qwen (Alibaba) | open-weights | 128K | 0 (local) | 0 (local) | Text | ~152K | MoE, 48 layers |
+| phi-4 | microsoft | open-weights | 16K | 0 (local) | 0 (local) | Text | ~200K | Dense, 40 layers |
+| Gemma-3-12B-it | google | open-weights | 128K | 0 (local) | 0 (local) | Multimodal | ~262K | Dense, 48 layers |
+| Qwen3-8B | Qwen | open-weights | 128K | 0 (local) | 0 (local) | Text | ~152K | Dense, 36 layers |
+| Llama-3.1-8B-Instruct | meta-llama | open-weights | 128K | 0 (local) | 0 (local) | Text | ~128K | Dense, 32 layers |
 
 **Чому обрав саме ці моделі?** (1-2 речення)
+I chose these text/multimodal models to get good visibility into what can be achieved with frontier models compared to cheaper, smaller ones — including a local model.
+
 
 ---
 
@@ -30,11 +32,11 @@
 
 | Модель | Dimensions | Max Input Tokens | MTEB Score | Ціна / Хостинг |
 |---|---|---|---|---|
-| | | | | |
-| | | | | |
-| | | | | |
-| | | | | |
-| | | | | |
+| openai/text-embedding-3-small | 1536 | 8,191 | 62.3% | $0.02 per 1M |
+| openai/text-embedding-3-large | 3072 | 8,192 | 64.6% | $0.13 per 1M |
+| intfloat/multilingual-e5-large | 1024 | 8K | 60.9% | $0.01 per 1M |
+| CohereLabs/Cohere-embed-multilingual-v3.0 | 1024 | 4096 | 64.0% | 0  (local) |
+| Qwen/Qwen3-Embedding-0.6B | 1024 | 32K | ~70% | 0 (local) |
 
 ---
 
