@@ -51,9 +51,10 @@ I chose these text/multimodal models to get good visibility into what can be ach
 - Small: invalid_token | null | session_expired
 
 **Ключова знахідка:**
-1. With temperature higher than 0.1 smaller model can't handle it at all.
-2. One time llama3.1:8b with t=0.7 created python script to parse it :D But most of the time not finished json / imaginable json
-3. Both models include in response before and after explanation with t=1.2, not only json
+1. With a temperature higher than 0.1, the smaller model can't handle the task at all.
+2. One time llama3.1:8b at T=0.7 wrote a Python script to parse it :D But most of the time it produced unfinished or imaginary JSON.
+3. At T=1.2 both models wrap the JSON with explanations before and after, not only the JSON.
+
 ---
 
 ## Кейс 2: Summarization
@@ -63,10 +64,10 @@ I chose these text/multimodal models to get good visibility into what can be ach
 - Small: +
 
 **Чи додала маленька модель зайве форматування** (наприклад, жирні заголовки)?
-Format is wild for llama3.1:8b
+The formatting is wild for llama3.1:8b.
 
 **Ключова знахідка:**
-Foundational model is consistent with formating and summary through all range of temperature in the test
+The foundational model is consistent with formatting and summary across the whole temperature range in the test.
 
 ---
 
@@ -74,7 +75,7 @@ Foundational model is consistent with formating and summary through all range of
 
 **Вартість 120 ГБ (правильно: $29.50/міс)**
 - Large T=0.1: $29.50/міс та $354/рік
-- Large T=1.2: $28.80 (for first put price then resoning for this price)
+- Large T=1.2: $28.80 (first states a price, then reasons about that price)
 - Small T=0.1: $30,00
 - Small T=1.2: -
 
@@ -86,7 +87,7 @@ Foundational model is consistent with formating and summary through all range of
 
 **Ключова знахідка:**
 
-For calculation low temperature works better for both model
+For calculation, a low temperature works better for both models.
 
 ---
 
@@ -97,8 +98,8 @@ For calculation low temperature works better for both model
 - Small: 1 explanation + 1 bolded topic + 3 sentences
 
 **Найпомітніша різниця у словнику між T=0.1 та T=1.2 (Large):**
-T=0.1 more like technical presentation, 
-T=1.2 closer to sales speech 
+T=0.1 reads more like a technical presentation.
+T=1.2 is closer to a sales pitch.
 
 **Чи дотрималась маленька модель формату "одна відповідь, 3 речення"?**
 Only with t=0.7
@@ -113,32 +114,32 @@ We can control emotion level of response with temperature
 Запусти `uv run ladder.py` і заповни таблицю за результатами.  
 Правильна відповідь: **$29.50/міс**, блокування при **5× ліміту** (негайно, не Pending).
 
-| Модель | Архітектура | Вартість (що написала?) | Blocking 5× ✓/✗ | Час | Cost ($) |
-|---|---|---|---|---|---|
-| llama-3.2-1b | Dense 1B | - | - | 1.5s | $0.000050 |
-| gemma-3-4b-it | Dense 4B | $31.50 | + | 13.3s | $0.000047 |
-| qwen3-30b-a3b | MoE 3B/30B | | | | | (failed)
-| llama-4-scout | MoE 17B/109B | $31.50 / $378 | + | 2.9s | $0.000729 |
-| llama-3.3-70b | Dense 70B | $378 | + | 6.0s |  $0.000178 |
-| gpt-4o | Frontier | $354 | + | 2.6s | $0.004045 |
+| Модель        | Архітектура   | Вартість (що написала?) | Blocking 5× ✓/✗ | Час   | Cost ($)   |
+|---------------|---------------|-------------------------|-----------------|-------|------------|
+| llama-3.2-1b  | Dense 1B      | -                       | -               | 1.5s  | $0.000050  |
+| gemma-3-4b-it | Dense 4B      | $31.50                  | +               | 13.3s | $0.000047  |
+| qwen3-30b-a3b | MoE 3B/30B    | (failed)                | (failed)        | -     | -          |
+| llama-4-scout | MoE 17B/109B  | $31.50 / $378           | +               | 2.9s  | $0.000729  |
+| llama-3.3-70b | Dense 70B     | $378                    | +               | 6.0s  | $0.000178  |
+| gpt-4o        | Frontier      | $354                    | +               | 2.6s  | $0.004045  |
 
 **При якому розмірі вперше з'являється правильна відповідь?**
-gpt-4o, but he didn't specify monthly cost.
+gpt-4o, but it didn't specify the monthly cost.
 
 **Рефлексія:** Для продукту з 1,000 запитів/день на цій задачі — який tier обираєш і чому?
-I would invest more in testing and probably split cost / blocking rules.
-For blocking rules looks like Smaller models is effective enough (need to confirm through evaluation)
-For calculation - i would provide more clear prompt with examples and test again :D
+I would invest more in testing and probably split the cost / blocking rules.
+For blocking rules, the smaller models look effective enough (need to confirm through evaluation).
+For calculation, I would provide a clearer prompt with examples and test again :D
 
 ---
 
 ## Загальне
 
 **Який кейс показав найбільший gap між моделями і чому?**
-Data Extraction. Because small model coudn't handle it reliably.
+Data Extraction. Because the small model couldn't handle it reliably.
 
 **Що здивувало найбільше?**
-That small model strugling with data extraction havily.
+That the small model struggled with data extraction so heavily.
 
 ---
 
@@ -146,7 +147,7 @@ That small model strugling with data extraction havily.
 
 **Кейс 4, T=1.0: Top-P=1.0 vs Top-P=0.1 — різниця декільками реченнями:**
 
-Top-P=0.1 keeps generation with a small subset of options and keeps generation on track without going wild. On the other hand Top-P=1.0 feels more unnatural with words like 'annihilate':D
+Top-P=0.1 keeps generation within a small subset of options and stays on track without going wild. Top-P=1.0, on the other hand, feels more unnatural, with words like 'annihilate' :D
 
 ---
 
