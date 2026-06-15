@@ -1,0 +1,2 @@
+# time: 1.5s | cost: $0.000995
+Introducing Git-Burn: the effortless way to keep your repositories clean and clutter-free! Say goodbye to stale branches with our automated tool that seamlessly deletes inactive branches after 30 days, and sends a friendly Slack reminder to the last committer. Designed for DevOps engineers who value efficiency, Git-Burn transforms repository management from a chore to a breeze, so you can focus on what truly matters—building great software!

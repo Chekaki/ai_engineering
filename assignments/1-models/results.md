@@ -2,8 +2,8 @@
 
 **Студент:**  
 **Дата:**  
-**Large model:** (наприклад, `openai/gpt-4o`)  
-**Small model:** (наприклад, `google/gemma-3-4b-it` або `ollama/gemma3:2b`)
+**Large model:** gpt-4o
+**Small model:** llama3.1:8b
 
 ---
 
@@ -43,56 +43,68 @@ I chose these text/multimodal models to get good visibility into what can be ach
 ## Кейс 1: Data Extraction
 
 **UNIX timestamp** (`1740665406`) — що зробила кожна модель?
-- Large (T=0.1 / T=1.2):
-- Small (T=0.1 / T=1.2):
+- Large (T=0.1 / T=1.2): null / null
+- Small (T=0.1 / T=1.2): left as is / left as is
 
 **error_type для рядка WARN** — `"invalid_token"` чи щось інше?
-- Large:
-- Small:
+- Large: invalid_token | null | session_expired
+- Small: invalid_token | null | session_expired
 
 **Ключова знахідка:**
-
+1. With temperature higher than 0.1 smaller model can't handle it at all.
+2. One time llama3.1:8b with t=0.7 created python script to parse it :D But most of the time not finished json / imaginable json
+3. Both models include in response before and after explanation with t=1.2, not only json
 ---
 
 ## Кейс 2: Summarization
 
 **Цифра "60-70%"** — збережена при T=1.2?
-- Large:
-- Small:
+- Large: +
+- Small: +
 
 **Чи додала маленька модель зайве форматування** (наприклад, жирні заголовки)?
+Format is wild for llama3.1:8b
 
 **Ключова знахідка:**
+Foundational model is consistent with formating and summary through all range of temperature in the test
 
 ---
 
 ## Кейс 3: Reasoning
 
 **Вартість 120 ГБ (правильно: $29.50/міс)**
-- Large T=0.1:
-- Large T=1.2:
-- Small T=0.1:
-- Small T=1.2:
+- Large T=0.1: $29.50/міс та $354/рік
+- Large T=1.2: $28.80 (for first put price then resoning for this price)
+- Small T=0.1: $30,00
+- Small T=1.2: -
 
 **Поріг блокування (правильно: "5 разів" = негайний блок)**
-- Large:
-- Small T=1.2:
+- Large T=0.1: +
+- Large T=1.2: +
+- Small T=0.1: -
+- Small T=1.2: Pending
 
 **Ключова знахідка:**
+
+For calculation low temperature works better for both model
 
 ---
 
 ## Кейс 4: Creative Pitch
 
 **Кількість речень при T=1.2**
-- Large:
-- Small:
+- Large: 3
+- Small: 1 explanation + 1 bolded topic + 3 sentences
 
 **Найпомітніша різниця у словнику між T=0.1 та T=1.2 (Large):**
+T=0.1 more like technical presentation, 
+T=1.2 closer to sales speech 
 
 **Чи дотрималась маленька модель формату "одна відповідь, 3 речення"?**
+Only with t=0.7
 
 **Ключова знахідка:**
+We can control emotion level of response with temperature
 
 ---
 
@@ -103,24 +115,30 @@ I chose these text/multimodal models to get good visibility into what can be ach
 
 | Модель | Архітектура | Вартість (що написала?) | Blocking 5× ✓/✗ | Час | Cost ($) |
 |---|---|---|---|---|---|
-| llama-3.2-1b | Dense 1B | | | | |
-| gemma-3-4b-it | Dense 4B | | | | |
-| qwen3-30b-a3b | **MoE 3B/30B** | | | | |
-| llama-4-scout | **MoE 17B/109B** | | | | |
-| llama-3.3-70b | Dense 70B | | | | |
-| gpt-4o | Frontier | | | | |
+| llama-3.2-1b | Dense 1B | - | - | 1.5s | $0.000050 |
+| gemma-3-4b-it | Dense 4B | $31.50 | + | 13.3s | $0.000047 |
+| qwen3-30b-a3b | MoE 3B/30B | | | | | (failed)
+| llama-4-scout | MoE 17B/109B | $31.50 / $378 | + | 2.9s | $0.000729 |
+| llama-3.3-70b | Dense 70B | $378 | + | 6.0s |  $0.000178 |
+| gpt-4o | Frontier | $354 | + | 2.6s | $0.004045 |
 
 **При якому розмірі вперше з'являється правильна відповідь?**
+gpt-4o, but he didn't specify monthly cost.
 
 **Рефлексія:** Для продукту з 1,000 запитів/день на цій задачі — який tier обираєш і чому?
+I would invest more in testing and probably split cost / blocking rules.
+For blocking rules looks like Smaller models is effective enough (need to confirm through evaluation)
+For calculation - i would provide more clear prompt with examples and test again :D
 
 ---
 
 ## Загальне
 
 **Який кейс показав найбільший gap між моделями і чому?**
+Data Extraction. Because small model coudn't handle it reliably.
 
 **Що здивувало найбільше?**
+That small model strugling with data extraction havily.
 
 ---
 
@@ -128,12 +146,18 @@ I chose these text/multimodal models to get good visibility into what can be ach
 
 **Кейс 4, T=1.0: Top-P=1.0 vs Top-P=0.1 — різниця декільками реченнями:**
 
+Top-P=0.1 keeps generation with a small subset of options and keeps generation on track without going wild. On the other hand Top-P=1.0 feels more unnatural with words like 'annihilate':D
+
 ---
 
 ## Бонус B: System Prompt Experiment (опціонально)
 
 **Gemma 4B, T=0.7, без system prompt — кількість речень у відповіді:**
+3 Options each with 3 sentences
 
 **Gemma 4B, T=0.7, з system prompt — кількість речень у відповіді:**
+3
 
 **Чи виправив system prompt поведінку? (1-2 речення):**
+Yes, same result if we put "You must write exactly 3 sentences. Do not provide multiple options or variants." into user prompt.
+

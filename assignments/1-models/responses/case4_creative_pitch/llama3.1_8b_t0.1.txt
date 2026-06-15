@@ -1,0 +1,5 @@
+# time: 5.5s | cost: $0.000000
+Here's a possible marketing pitch:
+
+**Introducing Git-Burn: The Lazy DevOps Engineer's Best Friend!**
+Say goodbye to cluttered repositories and hello to streamlined workflows with Git-Burn, the automated branch cleaner that deletes unused branches after 30 days of inactivity. With Git-Burn, you'll receive Slack notifications when a branch is deleted, keeping your team informed and up-to-date - all without lifting a finger!

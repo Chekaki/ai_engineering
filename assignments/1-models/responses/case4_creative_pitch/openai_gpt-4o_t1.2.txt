@@ -1,0 +1,2 @@
+# time: 1.2s | cost: $0.000845
+Tired of cluttered repositories and forgotten branches? Git-Burn is your ultimate clean-up companion, automatically annihilating stagnant branches every 30 days and alerting the last committer through Slack. Perfect for the laid-back DevOps engineer looking to streamline projects with zero hassle, Git-Burn keeps your workspace efficient and beautifully burnished!
