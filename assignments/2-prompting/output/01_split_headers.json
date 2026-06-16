@@ -84,8 +84,8 @@
     "number": 1,
     "age": 38,
     "nationality": "Germany",
-    "phone": "716-1 Bahnhofstrasse",
-    "address": null
+    "phone": null,
+    "address": "716-1 Bahnhofstrasse"
   },
   {
     "league": "Bundesliga",

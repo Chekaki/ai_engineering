@@ -167,7 +167,7 @@
   {
     "league": "La Liga",
     "team": "Real Madrid",
-    "name": "Aurélien Tchouaméni",
+    "name": "Aurélien Tchouameni",
     "position": "CDM",
     "number": 14,
     "age": 24,
@@ -326,8 +326,8 @@
     "number": 7,
     "age": 23,
     "nationality": "England",
-    "phone": null,
-    "address": null
+    "phone": "0046 3 256 3904",
+    "address": "421-4 King St"
   },
   {
     "league": "Premier League",
@@ -425,8 +425,8 @@
     "number": 8,
     "age": 26,
     "nationality": "Norway",
-    "phone": "0046 3 256 3904",
-    "address": "421-4 King St"
+    "phone": null,
+    "address": null
   },
   {
     "league": "Premier League",
