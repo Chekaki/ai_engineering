@@ -111,41 +111,51 @@ uv run eval.py --bonus
 
 ### `01_split_headers`
 
-**У чому складність:** Many values are broken across lines. So I need to specify how they can be broken and how to restore them.
+**У чому складність:** 
+Many values are broken across lines. So I need to specify how they can be broken and how to restore them.
 
-**Що змінив у промпті / коді:** I added a rule to join the broken parts back together (words, positions, phones). I added a rule to skip header words, AKA names, and season labels.
+**Що змінив у промпті / коді:** 
+I added a rule to join the broken parts back together (words, positions, phones). I added a rule to skip header words, AKA names, and season labels.
 
 ---
 
 ### `02_vertical_header`
 
-**У чому складність:** The league name is printed one letter per line (P / r / e / m / i / e / r ...). The team name is repeated before every player instead of one time as a title.
+**У чому складність:** 
+The league name is printed one letter per line (P / r / e / m / i / e / r ...). The team name is repeated before every player instead of one time as a title.
 
-**Що змінив у промпті / коді:** I added a rule to join a league name that is printed one letter per line into one word. I used the rule "a team name applies to all players below it" so the repeated team name does not cause problems.
+**Що змінив у промпті / коді:** 
+I added a rule to join a league name that is printed one letter per line into one word. I used the rule "a team name applies to all players below it" so the repeated team name does not cause problems.
 
 ---
 
 ### `03_watermark`
 
-**У чому складність:** A "CONFIDENTIAL" watermark and some junk in the text: a prompt injection line ("ignore previous instructions"), and TBD placeholder rows mixed with the real data.
+**У чому складність:** 
+A "CONFIDENTIAL" watermark and some junk in the text: a prompt injection line ("ignore previous instructions"), and TBD placeholder rows mixed with the real data.
 
-**Що змінив у промпті / коді:** The system prompt tells the model to treat all text as data and never as an instruction. The rules skip the watermark. `validate_rows()` removes rows named `tbd` or `rick roll` (bonus guardrail).
+**Що змінив у промпті / коді:** 
+The system prompt tells the model to treat all text as data and never as an instruction. The rules skip the watermark. `validate_rows()` removes rows named `tbd` or `rick roll` (bonus guardrail).
 
 ---
 
 ### `04_list_roster`
 
-**У чому складність:** Clean bullet list with one line per player, but it has inline `aka` aliases and contacts packed in one cell with ` | ` between them. Some players have only a phone, only an address, or nothing.
+**У чому складність:** 
+Clean bullet list with one line per player, but it has inline `aka` aliases and contacts packed in one cell with ` | ` between them. Some players have only a phone, only an address, or nothing.
 
-**Що змінив у промпті / коді:** I added a rule to drop the `aka` alias and keep only the real full name. I added a rule to split the contacts cell into separate `phone` and `address` fields and use null when one is missing.
+**Що змінив у промпті / коді:** 
+I added a rule to drop the `aka` alias and keep only the real full name. I added a rule to split the contacts cell into separate `phone` and `address` fields and use null when one is missing.
 
 ---
 
 ### `05_album_sheet`
 
-**У чому складність:** two tables with different layout + merged columns. The phone and address are in a separate block.
+**У чому складність:** 
+Two tables with different layout + merged columns. The phone and address are in a separate block.
 
-**Що змінив у промпті / коді:** I used the same join, split, and null rules. I also noticed that expected output for this is not correct.
+**Що змінив у промпті / коді:** 
+I used the same join, split, and null rules. I also noticed that expected output for this is not correct.
 Just as example
 ```text
 Ben White.phone: expected 'None', got '+44 7807378225
