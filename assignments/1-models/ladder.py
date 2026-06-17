@@ -102,7 +102,7 @@ def main():
     print("=" * 70)
     print("CAPABILITY LADDER — Кейс 5")
     print(f"Task: Nebula-V reasoning  |  T={TEMPERATURE}  |  seed={SEED}")
-    print("Правильна відповідь: $29.50/міс, блокування (5×)")
+    print("Правильна відповідь: $29.50/міс | 5× — гранична умова (строго >5× = блок, рівно 5× = Pending)")
     print("=" * 70)
 
     results = []
