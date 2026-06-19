@@ -1,0 +1,2 @@
+# time: 1.6s | cost: $0.000915
+Introducing Git-Burn: the ultimate cleanup crew for your cluttered repositories! Say goodbye to forgotten branches with our automated 30-day purge, ensuring your projects stay lean and mean. Plus, with instant Slack notifications to the last committer, you'll always be in the loop without lifting a finger—perfect for the DevOps engineer who knows the value of working smarter, not harder.

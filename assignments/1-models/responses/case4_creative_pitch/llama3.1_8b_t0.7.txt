@@ -1,0 +1,4 @@
+# time: 1.2s | cost: $0.000000
+Here's a catchy 3-sentence marketing pitch:
+
+"Say goodbye to cluttered Git repositories with Git-Burn, the ultimate time-saver for lazy DevOps heroes! This game-changing tool automatically prunes stale branches after just 30 days of inactivity, freeing up your team from tedious branch management. With Slack notifications sent directly to the last committer, you'll never have to worry about forgotten feature branches again - Git-Burn's got your back!"

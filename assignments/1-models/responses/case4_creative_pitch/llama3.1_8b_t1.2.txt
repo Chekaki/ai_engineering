@@ -1,0 +1,6 @@
+# time: 3.5s | cost: $0.000000
+Here's a 3-sentence marketing pitch for Git-Burn:
+
+**"Say goodbye to stale code and hello to sanity with Git-Burn!"**
+
+This smart developer tool automates the tedious task of cleaning up unused branches, freeing you from cluttered repositories. With just one click, Git-Burn will purge any branch that's been dormant for 30 days, alerting the last committer via Slack so they can clean up their act. Give your team more time to write code and less time to clean it up with Git-Burn - your new favorite DevOps sidekick!

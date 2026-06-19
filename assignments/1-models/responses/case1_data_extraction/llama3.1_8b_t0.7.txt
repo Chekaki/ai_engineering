@@ -1,0 +1,55 @@
+# time: 4.5s | cost: $0.000000
+To extract the fields into a valid JSON, we need to identify each log entry that represents an error or exception and then parse out the relevant fields.
+
+Here are the relevant entries:
+- `1740665406 WARN`: invalid_token
+- `1740665408 ERROR`: db_timeout
+- `2026-02-27 14:10:15.901 FATAL`: timeout
+- `2026-02-27 14:10:17.000 ERROR`: CONNECTION_REFUSED
+- `ERROR: [CRITICAL_SYSTEM_FAILURE] - NO_IP_FOUND`
+
+Here is the extracted JSON:
+
+```json
+[
+    {
+        "timestamp": null,
+        "status_code": 401,
+        "request_time_ms": null,
+        "error_type": "invalid_token",
+        "client_ip": "192.168.1.15"
+    },
+    {
+        "timestamp": null,
+        "status_code": 500,
+        "request_time_ms": null,
+        "error_type": "db_timeout",
+        "client_ip": "10.0.5.102"
+    },
+    {
+        "timestamp": null,
+        "status_code": 499,
+        "request_time_ms": null,
+        "error_type": "timeout",
+        "client_ip": "192.168.1.88"
+    },
+    {
+        "timestamp": null,
+        "status_code": 0,
+        "request_time_ms": null,
+        "error_type": "CONNECTION_REFUSED",
+        "client_ip": "8.8.8.8"
+    },
+    {
+        "timestamp": null,
+        "status_code": null,
+        "request_time_ms": null,
+        "error_type": "NO_IP_FOUND",
+        "client_ip": null
+    }
+]
+```
+
+The timestamp field is `null` because it's not present in the provided logs. For some of these entries, other fields like request_time_ms or status_code are also `null`, but they could be filled with data if additional information was available.
+
+Please note that this might not be 100% accurate as there are many log lines and I had to manually identify which ones were errors.

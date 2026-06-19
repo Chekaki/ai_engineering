@@ -40,7 +40,7 @@ from litellm import completion
 litellm.suppress_debug_info = True
 
 # ── Змінюй цей рядок для кожного кейсу ──────────────────────────────────────
-CASE_NAME = "case1_data_extraction"
+CASE_NAME = "case4_creative_pitch"
 # Варіанти:
 #   "case1_data_extraction"
 #   "case2_summarization"
@@ -50,21 +50,21 @@ CASE_NAME = "case1_data_extraction"
 # ─────────────────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = ""  # необов'язково — інструкція для моделі (що робити, формат відповіді)
-PROMPT = "YOUR PROMPT HERE"  # контекст або запитання (текст логу, правила, тощо)
+PROMPT = """Write a catchy 3-sentence marketing pitch for a developer tool named 'Git-Burn'. Its main function is to automatically delete git branches that haven't been touched for 30 days and send a Slack notification to the last committer. Target audience: lazy DevOps engineers."""  # контекст або запитання (текст логу, правила, тощо)
 
 # ── Large models (хмара) — розкоментуй один ──────────────────────────────────
 LARGE_MODELS = [
-    "openrouter/openai/gpt-4o",
+    #"openrouter/openai/gpt-4o",
     # "openrouter/meta-llama/llama-4-scout",
 ]
 
 # ── Small / Local models — розкоментуй один ──────────────────────────────────
 SMALL_MODELS = [
     # Варіант A: платна мала модель через OpenRouter (~$0.04/M токенів, найпростіше)
-    # "openrouter/google/gemma-3-4b-it",
+    "openrouter/google/gemma-3-4b-it",
 
     # Варіант B: локально через Ollama (безкоштовно, потребує ~2 ГБ RAM)
-    # "ollama/gemma3:2b",
+    #"ollama/llama3.1:8b",
 
     # Варіант C: хмара безкоштовно через OpenRouter (є rate limit, може не пройти)
     # "openrouter/meta-llama/llama-3.2-3b-instruct:free",
@@ -72,7 +72,7 @@ SMALL_MODELS = [
 
 MODELS = LARGE_MODELS + SMALL_MODELS
 
-TEMPERATURES = [0.1, 0.7, 1.2]
+TEMPERATURES = [0.7]
 SEED = 42
 
 
@@ -103,7 +103,7 @@ def save_response(out_dir: Path, short_name: str, temp: float, text: str, elapse
     path = case_dir / f"{slug}_t{temp}.txt"
     cost_str = f"${cost:.6f}" if cost is not None else "n/a"
     header = f"# time: {elapsed:.1f}s | cost: {cost_str}\n"
-    path.write_text(header + text + "\n")
+    path.write_text(header + text + "\n", encoding="utf-8")
     print(f"  → saved {path}")
 
 
@@ -131,7 +131,7 @@ def main():
                 cost_str = f"${cost:.6f}" if cost is not None else "n/a"
                 print(f"Time: {elapsed:.1f}s | Cost: {cost_str}")
                 print(result)
-                save_response(out_dir, short_name, temp, result, elapsed, cost)
+                #save_response(out_dir, short_name, temp, result, elapsed, cost)
             except Exception as e:
                 print(f"ERROR: {e}")
 
