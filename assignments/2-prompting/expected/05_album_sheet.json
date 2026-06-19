@@ -18,8 +18,8 @@
     "number": 4,
     "age": 27,
     "nationality": "England",
-    "address": null,
-    "phone": null
+    "address": "Derybasivska 24, Apt 36",
+    "phone": "+44 7807378225"
   },
   {
     "league": "Premier League",
@@ -29,8 +29,8 @@
     "number": 2,
     "age": 23,
     "nationality": "France",
-    "address": null,
-    "phone": null
+    "address": "PO Box 3677, Kyiv",
+    "phone": "01 (218) 562-10-17"
   },
   {
     "league": "Premier League",
@@ -40,8 +40,8 @@
     "number": 6,
     "age": 26,
     "nationality": "Brazil",
-    "address": "Derybasivska 24, Apt 36",
-    "phone": "+44 7807 378225"
+    "address": null,
+    "phone": null
   },
   {
     "league": "Premier League",
@@ -51,8 +51,8 @@
     "number": 33,
     "age": 22,
     "nationality": "Italy",
-    "address": "PO Box 3677, Kyiv",
-    "phone": "+1 (218) 562-10-17"
+    "address": "PO Box 5831, Kyiv",
+    "phone": "656-62-26-25"
   },
   {
     "league": "Premier League",
@@ -62,8 +62,8 @@
     "number": 5,
     "age": 31,
     "nationality": "Ghana",
-    "address": null,
-    "phone": null
+    "address": "310-8 Bahnhofstrasse",
+    "phone": "0076 7 514"
   },
   {
     "league": "Premier League",
@@ -73,8 +73,8 @@
     "number": 41,
     "age": 26,
     "nationality": "England",
-    "address": "PO Box 5831, Kyiv",
-    "phone": "656-62-26-25"
+    "address": null,
+    "phone": null
   },
   {
     "league": "Premier League",
@@ -84,8 +84,8 @@
     "number": 8,
     "age": 26,
     "nationality": "Norway",
-    "address": "310-8 Bahnhofstrasse",
-    "phone": "0076 7 514 9227"
+    "address": null,
+    "phone": null
   },
   {
     "league": "Premier League",
@@ -95,8 +95,8 @@
     "number": 7,
     "age": 23,
     "nationality": "England",
-    "address": null,
-    "phone": null
+    "address": "421-4 King St",
+    "phone": "0046 3 256 3904"
   },
   {
     "league": "Premier League",
@@ -106,8 +106,8 @@
     "number": 11,
     "age": 23,
     "nationality": "Brazil",
-    "address": null,
-    "phone": null
+    "address": "213 Via Roma, Paris",
+    "phone": "+1 (476) 236-18"
   },
   {
     "league": "Premier League",
@@ -117,8 +117,8 @@
     "number": 29,
     "age": 25,
     "nationality": "Germany",
-    "address": "421-4 King St",
-    "phone": "0046 3 256 3904"
+    "address": "Rue de Paris 61, Apt 37",
+    "phone": "0081 6 490 9006"
   },
   {
     "league": "Premier League",
@@ -128,8 +128,8 @@
     "number": 19,
     "age": 30,
     "nationality": "Belgium",
-    "address": "213 Via Roma, Paris",
-    "phone": "+1 (476) 236-18-52"
+    "address": "PO Box 2235, Munich",
+    "phone": null
   },
   {
     "league": "Premier League",
@@ -139,8 +139,8 @@
     "number": 12,
     "age": 23,
     "nationality": "Netherlands",
-    "address": "Rue de Paris 61, Apt 37",
-    "phone": "0081 6 490 9006"
+    "address": "144 Via Roma, Milan",
+    "phone": "700-27-94-70"
   },
   {
     "league": "Premier League",
@@ -150,7 +150,7 @@
     "number": 15,
     "age": 24,
     "nationality": "Poland",
-    "address": "PO Box 2235, Munich",
+    "address": null,
     "phone": null
   },
   {
@@ -161,8 +161,8 @@
     "number": 30,
     "age": 30,
     "nationality": "England",
-    "address": "144 Via Roma, Milan",
-    "phone": "700-27-94-70"
+    "address": null,
+    "phone": null
   },
   {
     "league": "La Liga",
