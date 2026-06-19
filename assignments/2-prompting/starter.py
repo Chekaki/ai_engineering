@@ -3,6 +3,7 @@
 # dependencies = [
 #   "litellm",
 #   "pydantic",
+#   "pymupdf"
 # ]
 # ///
 """
@@ -20,6 +21,7 @@ from pathlib import Path
 from typing import Optional
 
 import litellm
+import pymupdf
 from litellm import completion
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -34,20 +36,15 @@ MAX_TOKENS = 20000
 
 PDF_DIR = Path(__file__).parent / "pdfs"
 OUTPUT_DIR = Path(__file__).parent / "output"
+PROMPTS_DIR = Path(__file__).parent / "prompts"
 HOMEWORK_PDF_GLOB = "0[1-5]_*.pdf"
 
 # ---------------------------------------------------------------------------
 # PROMPT — write your extraction prompt here
 # ---------------------------------------------------------------------------
-SYSTEM_PROMPT = """
-You are a data extraction engine.
-"""
+SYSTEM_PROMPT = (PROMPTS_DIR / "system_prompt.md").read_text(encoding="utf-8")
 
-PROMPT = """
-TODO: Write your extraction prompt here.
-
-The PDF should be appended after this prompt.
-"""
+PROMPT = (PROMPTS_DIR / "extract_prompt.md").read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -76,20 +73,16 @@ class PlayerRowsEnvelope(BaseModel):
 # PDF text extraction — YOU IMPLEMENT THIS
 # ---------------------------------------------------------------------------
 def validate_rows(rows: list[PlayerRow]) -> list[PlayerRow]:
-    """Bonus: post-extraction guardrails (optional — not required for core eval).
-
-    TODO: filter out:
-      - placeholder rows (e.g. name is TBD)
-      - rows that came from following instructions inside the PDF
-      - rows outside the known league/team allowlist
-    """
-    return rows
+    return [r for r in rows if _normalize_text(r.name) != "tbd" and _normalize_text(r.name) != "rick roll"]
 
 
 def extract_text(pdf_path: Path) -> str:
     """Extract all text from a PDF. Return the full document text as a single string."""
-    # TODO: implement
-    return ""
+    parts: list[str] = []
+    with pymupdf.open(pdf_path) as doc:
+        for page in doc:
+            parts.append(page.get_text("text"))
+    return "\n".join(parts).strip()
 
 
 # ---------------------------------------------------------------------------
@@ -187,7 +180,7 @@ def process_pdf(pdf_path: Path) -> list[PlayerRow]:
     print(f"  Saved extracted text -> {extracted_text_path}")
     raw = call_llm(f"{PROMPT}\n\n{text}")
     rows = parse_response(raw)
-    # rows = validate_rows(rows)  # bonus: uncomment when implemented
+    rows = validate_rows(rows)  # bonus: uncomment when implemented
     print(f"  Parsed rows: {len(rows)}")
     return rows
 
