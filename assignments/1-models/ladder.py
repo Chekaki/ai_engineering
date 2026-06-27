@@ -88,7 +88,7 @@ def ask(model_id: str, prompt: str):
 def save_response(out_dir: Path, label: str, text: str, elapsed: float, cost):
     case_dir = out_dir / "case5_capability_ladder"
     case_dir.mkdir(parents=True, exist_ok=True)
-    slug = label.strip().replace(" ", "_").replace("(", "").replace(")", "").replace("~", "")
+    slug = label.strip().replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "").replace("~", "")
     path = case_dir / f"{slug}_t{TEMPERATURE}.txt"
     cost_str = f"${cost:.6f}" if cost is not None else "n/a"
     header = f"# time: {elapsed:.1f}s | cost: {cost_str}\n"
