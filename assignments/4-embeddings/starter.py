@@ -124,6 +124,11 @@ def get_embeddings(texts: list[str]) -> np.ndarray:
 
     Use the model 'all-MiniLM-L6-v2' and return a numpy array of shape
     (len(texts), 384). Make sure to return a numpy array, not a tensor.
+
+    Hint:
+        from sentence_transformers import SentenceTransformer
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        return model.encode(texts, convert_to_numpy=True)
     """
     # TODO: implement
     raise NotImplementedError("TODO 1: implement get_embeddings")
@@ -149,6 +154,11 @@ def cluster_tickets(embeddings: np.ndarray, n_clusters: int) -> np.ndarray:
     After implementing, run with different values of --clusters (try 3–12)
     and record the ARI score each time. Find the k that maximises ARI and
     justify your choice in results.md.
+
+    Hint:
+        from sklearn.cluster import KMeans
+        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+        return kmeans.fit_predict(embeddings)
     """
     # TODO: implement
     raise NotImplementedError("TODO 2: implement cluster_tickets")
@@ -244,6 +254,13 @@ def bm25_search(
         2. Create BM25Okapi index from tokenized corpus.
         3. Score the query against all documents.
         4. Return top_k (index, score) pairs sorted by score descending.
+
+    Hint:
+        from rank_bm25 import BM25Okapi
+        tokenized = [doc.lower().split() for doc in corpus]
+        bm25 = BM25Okapi(tokenized)
+        scores = bm25.get_scores(query.lower().split())
+        # sort indices by score descending, take top_k
     """
     # TODO: implement
     raise NotImplementedError("TODO 4: implement bm25_search")
