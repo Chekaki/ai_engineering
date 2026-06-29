@@ -11,7 +11,7 @@
 # ]
 # ///
 """
-Homework v2: Ticket Auto-Categorization with Embeddings
+Homework: Ticket Auto-Categorization with Embeddings
 
 Pipeline:
   embed tickets → k-means clustering → LLM names clusters
@@ -740,7 +740,7 @@ def main() -> None:
     args = parser.parse_args()
 
     print("=" * 65)
-    print("  Ticket Auto-Categorization — HW v2 (300 tickets)")
+    print("  Ticket Auto-Categorization with Embeddings (300 tickets)")
     print("=" * 65)
 
     # Step 1: Embeddings
