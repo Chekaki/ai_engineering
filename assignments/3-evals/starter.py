@@ -221,17 +221,21 @@ def keyword_grader(response: str, test_case: dict) -> dict:
     # - forbidden_keywords: 1.0 if none of forbidden_keywords appear, else 0.0
     # - must_offer: fraction of must_offer options that appear in response (at least one => partial credit)
     text = response.lower()
-    
+
     result = {"required_keywords": 1.0, "forbidden_keywords": 1.0, "must_offer": 1.0}
 
-    if len(test_case["required_keywords"]):
-        result["required_keywords"] = sum(kw in text for kw in test_case["required_keywords"]) / len(test_case["required_keywords"])
+    required = test_case.get("required_keywords", [])
+    forbidden = test_case.get("forbidden_keywords", [])
+    must_offer = test_case.get("must_offer", [])
 
-    if len(test_case["forbidden_keywords"]):
-        result["forbidden_keywords"] = 0.0 if any(kw in text for kw in test_case["forbidden_keywords"]) else 1.0
-    
-    if len(test_case["must_offer"]):
-        result["must_offer"] = sum(kw in text for kw in test_case["must_offer"]) / len(test_case["must_offer"])
+    if len(required):
+        result["required_keywords"] = sum(kw in text for kw in required) / len(required)
+
+    if len(forbidden):
+        result["forbidden_keywords"] = 0.0 if any(kw in text for kw in forbidden) else 1.0
+
+    if len(must_offer):
+        result["must_offer"] = sum(kw in text for kw in must_offer) / len(must_offer)
 
     return result
 
