@@ -36,8 +36,8 @@ litellm.suppress_debug_info = True
 LADDER_MODELS = [
     {"id": "openrouter/meta-llama/llama-3.2-1b-instruct",  "label": "Nano   Dense  1B          (Sep 2024)"},
     {"id": "openrouter/google/gemma-3-4b-it",              "label": "Small  Dense  4B          (Mar 2025)"},
-    {"id": "openrouter/qwen/qwen3-30b-a3b",                "label": "Qwen3  MoE   3B-30B       (Apr 2026)"},  # 3B active / 30B total
-    {"id": "openrouter/meta-llama/llama-4-scout",          "label": "Scout  MoE   17B-109B     (Apr 2025)"},  # 17B active / 109B total
+    {"id": "openrouter/qwen/qwen3-30b-a3b",                "label": "Qwen3  MoE   3B_30B       (Apr 2026)"},  # 3B active / 30B total
+    {"id": "openrouter/meta-llama/llama-4-scout",          "label": "Scout  MoE   17B_109B     (Apr 2025)"},  # 17B active / 109B total
     {"id": "openrouter/meta-llama/llama-3.3-70b-instruct", "label": "Large  Dense  70B         (Dec 2024)"},
     {"id": "openrouter/openai/gpt-4o",                     "label": "GPT-4o Frontier           (May 2024)"},
 ]
@@ -88,7 +88,7 @@ def ask(model_id: str, prompt: str):
 def save_response(out_dir: Path, label: str, text: str, elapsed: float, cost):
     case_dir = out_dir / "case5_capability_ladder"
     case_dir.mkdir(parents=True, exist_ok=True)
-    slug = label.strip().replace(" ", "_").replace("(", "").replace(")", "").replace("~", "")
+    slug = label.strip().replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "").replace("~", "")
     path = case_dir / f"{slug}_t{TEMPERATURE}.txt"
     cost_str = f"${cost:.6f}" if cost is not None else "n/a"
     header = f"# time: {elapsed:.1f}s | cost: {cost_str}\n"
