@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# uv
+.uv/
+uv.lock
+
+# OS
+.DS_Store
+
+# Secrets / env
+.env
+.env.*
