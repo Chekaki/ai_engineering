@@ -67,9 +67,13 @@ logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sentence_transformers import SentenceTransformer, CrossEncoder
+from rank_bm25 import BM25Okapi
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 from sklearn.metrics import adjusted_rand_score
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 import litellm
 from litellm import completion
@@ -118,20 +122,9 @@ TICKETS: list[dict] = json.loads(_DATA_PATH.read_text())
 # TODO 1: GET EMBEDDINGS
 # ---------------------------------------------------------------------------
 
-def get_embeddings(texts: list[str]) -> np.ndarray:
-    """
-    Generate embeddings for a list of texts using sentence-transformers.
-
-    Use the model 'all-MiniLM-L6-v2' and return a numpy array of shape
-    (len(texts), 384). Make sure to return a numpy array, not a tensor.
-
-    Hint:
-        from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-        return model.encode(texts, convert_to_numpy=True)
-    """
-    # TODO: implement
-    raise NotImplementedError("TODO 1: implement get_embeddings")
+def get_embeddings(texts: list[str]) -> np.ndarray:   
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    return model.encode(texts, convert_to_numpy = True)
 
 
 # ---------------------------------------------------------------------------
@@ -139,29 +132,8 @@ def get_embeddings(texts: list[str]) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def cluster_tickets(embeddings: np.ndarray, n_clusters: int) -> np.ndarray:
-    """
-    Cluster embeddings using K-Means (sklearn).
-
-    Args:
-        embeddings: numpy array of shape (n_samples, embedding_dim)
-        n_clusters: number of clusters
-
-    Returns:
-        numpy array of cluster labels, shape (n_samples,)
-
-    Use random_state=42 for reproducibility.
-
-    After implementing, run with different values of --clusters (try 3–12)
-    and record the ARI score each time. Find the k that maximises ARI and
-    justify your choice in results.md.
-
-    Hint:
-        from sklearn.cluster import KMeans
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-        return kmeans.fit_predict(embeddings)
-    """
-    # TODO: implement
-    raise NotImplementedError("TODO 2: implement cluster_tickets")
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    return kmeans.fit_predict(embeddings)
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +156,12 @@ def name_cluster(tickets: list[str]) -> str:
         What short category name (2-4 words) best describes this group?
         Reply with ONLY the category name, nothing else.
     """
-    prompt = ""  # <-- replace with your prompt that includes the tickets
+    ticket_lines = "\n".join(f"- {t}" for t in tickets)
+    prompt = f"""Below is a list of tickets from one category:
+{ticket_lines}
+
+Create a short category name (2-4 words) for those tickets
+Reply with ONLY the category name"""  # <-- replace with your prompt that includes the tickets
 
     if not prompt.strip():
         raise NotImplementedError(
@@ -262,8 +239,12 @@ def bm25_search(
         scores = bm25.get_scores(query.lower().split())
         # sort indices by score descending, take top_k
     """
-    # TODO: implement
-    raise NotImplementedError("TODO 4: implement bm25_search")
+    tokenized = [doc.lower().split() for doc in corpus]
+    bm25 = BM25Okapi(tokenized)
+    scores = bm25.get_scores(query.lower().split())
+    top_idx = np.argsort(scores)[::-1][:top_k]
+    return [(int(i), float(scores[i])) for i in top_idx]
+    
 
 
 # ---------------------------------------------------------------------------
@@ -301,8 +282,15 @@ def upload_to_qdrant(
     Returns:
         QdrantClient — pass this to qdrant_search() for querying.
     """
-    # TODO: implement
-    raise NotImplementedError("TODO 5a: implement upload_to_qdrant")
+    client = QdrantClient(":memory:")
+    client.create_collection(collection_name=COLLECTION, vectors_config=VectorParams(size=384, distance=Distance.COSINE))
+    points = []
+    for i, t in enumerate(tickets):
+        point = PointStruct(id=i, vector=embeddings[i].tolist(), payload={"text": t["text"], "category": t["category"]})
+        points.append(point)
+    
+    client.upsert(COLLECTION, points)
+    return client
 
 
 def qdrant_search(
@@ -328,8 +316,12 @@ def qdrant_search(
     because Qdrant :memory: uses exact COSINE distance (no approximation at this size).
     The difference becomes visible at scale (100K+ vectors).
     """
-    # TODO: implement
-    raise NotImplementedError("TODO 5b: implement qdrant_search")
+    results = client.query_points(
+        collection_name=COLLECTION,
+        query=query_emb.tolist(),
+        limit=top_k,
+    ).points
+    return [(point.id, point.score) for point in results]
 
 
 # ---------------------------------------------------------------------------
@@ -366,10 +358,11 @@ def rerank(
     Returns:
         List of (text, score) tuples sorted by relevance score descending.
     """
-    # TODO (bonus): implement
-    raise NotImplementedError(
-        f"BONUS: implement rerank() using CrossEncoder({RERANKER_MODELS[model_key]})"
-    )
+    model = CrossEncoder(RERANKER_MODELS[model_key])
+    pairs = [[query, text] for text in candidate_texts]
+    scores = model.predict(pairs)
+    ranked = sorted(zip(candidate_texts, scores), key=lambda x: x[1], reverse=True)
+    return ranked
 
 
 # ---------------------------------------------------------------------------
