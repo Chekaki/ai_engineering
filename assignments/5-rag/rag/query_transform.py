@@ -23,17 +23,73 @@ def rewrite_query(conversation_context: str, ambiguous_query: str) -> str:
     Tip (slide 34): a self-contained query ("What is the Eiffel Tower?") needs no
     rewrite — rewriting it only adds latency and cost.
     """
-    # TODO 4: build the rewrite prompt and return llm_complete(prompt).
-    raise NotImplementedError("TODO 4: implement rewrite_query")
+    prompt = f"""You rewrite a follow-up question into a standalone search query.
+Rules:
+- Use the conversation to replace pronouns and missing words with real names.
+- If the follow-up is already standalone, return it unchanged.
+- Return ONLY the question. No preamble, no quotes, no explanation.
+Example 1:
+Conversation: The user asked about coffee.
+Follow-up: Where does it grow?
+Rewritten: Where does coffee grow?
 
+Example 2:
+Conversation: The user asked about coffee.
+Follow-up: What is a lighthouse?
+Rewritten: What is a lighthouse?
+
+Conversation: {conversation_context}
+Follow-up: {ambiguous_query}
+Rewritten:
+"""
+    answer = llm_complete(prompt).strip().strip('"\'').strip()
+    return answer or ambiguous_query
 
 # --- BONUS: query bake-off (same interface, pick a winner in results.md) ------
 
 def decompose(query: str) -> list[str]:
     """BONUS: split a multi-hop query into simpler sub-queries (fan-out)."""
-    raise NotImplementedError("BONUS: implement decompose")
+    prompt = f"""You split a complex question into simple standalone search queries.
+Rules:
+- Each sub-query is about ONE entity or topic and makes sense on its own.
+- Return 2 to 4 sub-queries, one per line. No numbering, no bullets, no explanation.
+- If the question is already about a single topic, return it unchanged as one line.
+Example 1:
+Question: How are volcanoes, earthquakes, and plate tectonics connected?
+Sub-queries:
+What is a volcano?
+What is an earthquake?
+What is plate tectonics?
+Example 2:
+Question: Compare the Moon and Mars.
+Sub-queries:
+What is the Moon?
+What is Mars?
+
+Question: {query}
+Sub-queries:
+"""
+    answer = llm_complete(prompt)
+    subs = []
+    for line in answer.splitlines():
+        line = line.strip().strip('"\'').lstrip("-*. 0123456789").strip()
+        if line and not line.endswith(":"):
+            subs.append(line)
+    if len(subs) < 2:
+        return [query]
+    return subs[:4]
 
 
 def hyde(query: str) -> str:
     """BONUS: HyDE — generate a hypothetical answer to embed instead of the query."""
-    raise NotImplementedError("BONUS: implement hyde")
+    prompt = f"""Write a short encyclopedia-style paragraph that answers the question.
+Rules:
+- 2 to 4 sentences, neutral Wikipedia tone, no first person.
+- State facts directly, as if quoting an article. Invented details are fine:
+  the text is used only as a search probe and is never shown to anyone.
+- Return ONLY the paragraph. No preamble, no quotes.
+Question: {query}
+Paragraph:
+"""
+    answer = llm_complete(prompt).strip().strip('"\'').strip()
+    return answer or query

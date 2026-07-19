@@ -30,7 +30,7 @@ EMBED_DIM = 384
 # --- Retrieval / indexing -------------------------------------------------
 TOP_K = 8  # top chunks per search; higher helps multi-source answers (fan-out gives ~TOP_K//n per sub-query)
 # Students change CHUNK_SIZE / CHUNK_OVERLAP in TODO 1 and compare in results.md.
-CHUNK_SIZE = 400          # characters per chunk (a simple, char-based default)
+CHUNK_SIZE = 700          # characters per chunk (a simple, char-based default)
 CHUNK_OVERLAP = 60        # characters of overlap between neighbouring chunks
 
 # --- Context packing (TODO 3) --------------------------------------------
@@ -41,8 +41,8 @@ TOKEN_BUDGET = 1200       # approx token budget for the assembled context
 # calibrate them yourself (TODO 2): compare the top-score of a real query vs a
 # no-evidence query (see the [debug] line / trace) and set GOOD/WEAK on the boundary.
 # Re-tune if you change the chunk size or corpus.
-CRAG_GOOD_THRESHOLD = 0.5
-CRAG_WEAK_THRESHOLD = 0.35
+CRAG_GOOD_THRESHOLD = 0.57
+CRAG_WEAK_THRESHOLD = 0.41
 
 # --- Cost model (eval harness) -------------------------------------------
 # Approximate. Model prices change; we track tokens and multiply by a constant

@@ -34,7 +34,16 @@ def check_faithfulness(output: str, retrieved_titles: list[str]) -> str:
     Bonus (Tier 2): use llm.llm_complete as an LLM-as-judge to grade whether each
     claim is actually supported by the retrieved text (score 1-5, retry if < 3).
     """
-    # TODO 5: implement the grounding check described above.
-    #   Helpers available: REFUSAL_MARKERS, CITATION_RE (extracts cited titles).
-    #   Compare cited titles against retrieved_titles (case-insensitive, trimmed).
-    raise NotImplementedError("TODO 5: implement check_faithfulness")
+    if any(marker in output.lower() for marker in REFUSAL_MARKERS):
+        return output
+    
+    cited = [c.strip() for c in CITATION_RE.findall(output)]
+    if not cited:
+        raise ModelRetry("Your answer has no [Source: Title] citation.")
+
+    allowed = {t.strip().lower() for t in retrieved_titles}
+    for title in cited:
+        if title.lower() not in allowed:
+            raise ModelRetry(f"[Source: {title}] was never retrieved, so that claim is not grounded.")
+
+    return output

@@ -26,8 +26,24 @@ def search(deps: WikiDeps, query: str, top_k: int = config.TOP_K) -> list[dict]:
         - Cosine = matrix multiply; take the top_k via np.argsort.
         - Unlike v2, DO NOT discard the score — the CRAG gate needs it.
     """
-    # TODO 2a: implement cosine search over deps.chunk_embeddings.
-    raise NotImplementedError("TODO 2a: implement search")
+    all_embs = deps.chunk_embeddings
+    
+    query_emb = deps.encoder.encode(query, convert_to_numpy=True)
+    query_norm = query_emb / (np.linalg.norm(query_emb) + 1e-10)
+    all_norms  = all_embs / (np.linalg.norm(all_embs, axis=1, keepdims=True) + 1e-10)
+    sims       = all_norms @ query_norm
+    top_idx    = np.argsort(sims)[::-1][:top_k]
+    
+    result = []
+    for i in top_idx:
+        chunk = deps.chunks[int(i)]
+        result.append({
+            "chunk_id": chunk["chunk_id"],
+            "article_title": chunk["article_title"],
+            "text": chunk["text"],
+            "score": float(sims[i]),
+        })
+    return result
 
 
 def crag_gate(
@@ -45,5 +61,11 @@ def crag_gate(
     This is the Corrective RAG idea: check the evidence BEFORE generating, instead
     of catching a hallucination afterwards. Calibrate the thresholds on golden.json.
     """
-    # TODO 2b: implement the gate on the top score.
-    raise NotImplementedError("TODO 2b: implement crag_gate")
+    if not results:
+        return "none"
+
+    if results[0]["score"] < weak_threshold:
+        return "none"
+    if results[0]["score"] < good_threshold:
+        return "weak"
+    return "good"
