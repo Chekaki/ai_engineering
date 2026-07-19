@@ -132,7 +132,6 @@ def get_embeddings(texts: list[str]) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def cluster_tickets(embeddings: np.ndarray, n_clusters: int) -> np.ndarray:
-    from sklearn.cluster import KMeans
     kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     return kmeans.fit_predict(embeddings)
 
