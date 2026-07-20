@@ -34,9 +34,9 @@ The compromise: small chunks give better precision, but they cost more. They are
 
 With this dataset of chunk sizes overall winner is 400. It gives the best recall (single) = 1.000, the latency is much better than 200 (17.6 vs 30.2 ms), and the index is half the size. Its only weak point is the lowest recall (multi) (0.806), but query decomposition (bonus) should fix this: for multi-hop we do not use one vector, we split the question. But this was only the first 3-size test - after the full sweep below I changed the choice to 700/60.
 
+### Chunk size / overlap research
 
-Chunk size / overlap research
-
+```text
 config       rec(single)  rec(multi)   prec@k    mrr  refusal   ret_ms  n_chunks
 --------------------------------------------------------------------------------
 200/0                1.0       0.917    0.615  0.887    0.667    24.98     20197
@@ -86,7 +86,7 @@ config       rec(single)  rec(multi)   prec@k    mrr  refusal   ret_ms  n_chunks
 3000/200             1.0         1.0    0.229  0.887    0.667     7.89      2948
 5000/0               1.0         1.0    0.188  0.889    0.667     7.74      2615
 10000/0              1.0         1.0    0.125  0.892    0.667     7.01      2500
----
+```
 
 ### Summary
 
@@ -103,6 +103,8 @@ Corpus: 2500 documents. I swept chunk_size x overlap and measured retrieval only
 **Trade-off:** large chunks give the best latency and the smallest index with no recall loss (and even better multi-hop recall), but a bigger context, which raises the LLM cost on later steps (rewrite, generation).
 
 **Winner for this dataset and encoder: 700/60** - good latency, small index, still safely under the encoder limit (820 character ~200-250 tokens for all-minilm-l6-v2). The only cost is precision, which matters less here because packing dedups and the generator reads all top-k chunks.
+
+---
 
 ## 2. Внесок компонентів (спостерігається)
 
@@ -151,12 +153,12 @@ tokens ≈ len(prompt+response) / 4              # ~4 символи на ток
 cost $ ≈ (tokens / 1000) × USD_PER_1K_TOKENS   # константа в rag/config.py (= 0.0003)
 ```
 
-Estimate tokens per call type
+**Estimate tokens per call type:**
+
 - generation: instructions (~1000 chars ≈ 250 tok) + packed context (TOKEN_BUDGET = 1200 tok) + question (~20 tok) + answer (~500 chars ≈ 120 tok) ≈ ~1600 tokens
 - rewrite: fixed prompt with 2 examples (~700 chars) + conversation context (~800 chars) + short one-line response ≈ 1600 chars ≈ ~400 tokens
 - decompose (bonus): small prompt + 2-3 sub-queries out ≈ ~400 tokens (fan-out retrieval itself is free, generation is still 1 call)
 - Tier-2 judge (bonus): it re-reads the full context + the answer ≈ ~1500 tokens, so it costs almost as much as generation itself
-
 
 | Конфіг | LLM calls / запит | приблизна cost $ / запит |
 |--------|:-----------------:|:------------------------:|
@@ -166,6 +168,7 @@ Estimate tokens per call type
 | + Tier-2 judge (bonus) | +1 | +1500 tok → ~$0.0010 total (≈2x Naive) |
 
 **Головний висновок:** платите за трансформації запиту й генерацію, не за retrieval. Де додатковий виклик НЕ вартий приросту якості?
+
 We pay for query transforms and generation, not for retrieval. The extra call that is not worth
 it here is the Tier-2 LLM-judge. It re-reads the full packed context (~1200 tokens), so it alone
 almost doubles the cost per query (~$0.0005 -> ~$0.0010). At the same time Tier-1 validator
@@ -223,8 +226,10 @@ better.
 
 Real example from chat testing (question: "Technology of the RMS Titanic"):
 
+```text
 | VALIDATE RETRY -> [Source: Propeller, Titanic] was never retrieved, so that claim is not grounded.
 | VALIDATE PASS — answer grounded in retrieved sources
+```
 
 The model merged two real sources into one citation: [Source: Propeller, Titanic]. The
 validator compares the whole cited title against the retrieved titles, and the literal
@@ -243,10 +248,12 @@ it is deterministic and cannot be gamed, and the retry loop fixed the format by 
 Query bake-off (experiments/rewrite_bakeoff.py, index 700/60, TOP_K=8, GOOD=0.57).
 All 21 golden queries, same index, only the embedded probe differs.
 
+```text
        rec(single)  rec(multi)   MRR   refusal_acc
 raw       0.917       0.917     0.875     1.000
 hyde      1.000       0.861     1.000     1.000
 decomp    0.917       0.917     0.875     0.667
+```
 
 Winner: HyDE. It fixed the only failing single query, "What is the most famous landmark
 in Paris?" (top 0.605 -> 0.770, recall 0 -> 1). The question never says "Eiffel Tower";
@@ -260,6 +267,20 @@ CRAG thresholds were calibrated on. On this index only HyDE earned its extra LLM
 (~400 tokens, ~$0.0001, ~1s per query).
 
 **Injection defense:** чи витік canary-токен з `adversarial.jsonl` до і після `sanitize_context`?
+
 Yes, it leaked before sanitize_context. After, no.
 
 **Contextual retrieval / LLM-judge:** що змінилось у метриках?
+
+Contextual retrieval: skipped. To build contextual chunks for this corpus we need at least one LLM call per document (~2500 calls), because the model must see the full article to write a context for each chunk. In practice I would consider it for a source that does not change frequently: chunk once, cache the contexts, and re-chunk only the updated documents.
+
+LLM-judge (Tier 2): implemented in a simplified form, opt-in via env RAG_TIER2=1. The pre-built agent.py passes only (output, retrieved_titles) to the validator, and I did not find a clean way to pass the retrieved chunks: a module-level buffer works in a single-user demo but breaks with parallel requests. So my judge sees only the answer and the titles: it checks that each claim fits the article it cites and is not an obvious falsehood.
+
+Smoke test (experiments/judge_test.py), all three answers pass the deterministic Tier 1:
+- grounded answer -> 5/5, PASS
+- fabricated fact with a real retrieved title -> 1/5, RETRY
+- true fact cited to the wrong article -> 2/5, RETRY
+
+So the judge catches what Tier 1 cannot (Tier 1 only compares title strings). The trade-off: without the retrieved text the judge grades from its own knowledge, which is exactly what RAG tries to avoid - it would pass a plausible claim that is absent from the corpus.
+
+For production, Pydantic AI has a dedicated solution: the LLMJudge evaluator in Pydantic Evals, so I would run the judge offline as an evaluator instead of a runtime validator. A judge call almost doubles the cost per query, so if it stays in the runtime path I would gate it, for example run it only when CRAG says weak. Two more notes: (1) after any change to chunking or query transforms it makes sense to recalibrate the CRAG thresholds, because the score scale shifts; (2) before deciding, I would run the judge in shadow mode for some time and log how often it scores < 3 and at which CRAG top-scores. With that data I can decide if it is worth keeping, worth keeping only for weak evidence, or not worth having at all.
