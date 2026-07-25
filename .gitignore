@@ -8,6 +8,7 @@ venv/
 # uv
 .uv/
 uv.lock
+!assignments/6-agents/uv.lock
 
 # OS
 .DS_Store
