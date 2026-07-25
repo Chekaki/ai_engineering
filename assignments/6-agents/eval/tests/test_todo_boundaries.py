@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
 from langchain.tools import ToolRuntime
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.runtime import Runtime
 
 from eval.fakes import (
@@ -14,6 +15,7 @@ from eval.fakes import (
     DeterministicEmbeddings,
     DeterministicIdGenerator,
     DeterministicSummaryModel,
+    FiniteScriptedChatModel,
 )
 from ops_copilot import (
     StarterTodo,
@@ -41,16 +43,46 @@ from ops_scaffold.contracts import (
 
 
 class _SourceService:
-    def list_files(self, path: str = ".") -> object:
+    @staticmethod
+    def _result(operation: str, content: str) -> SourceResult:
+        return SourceResult(
+            source_family=SourceFamily.REPOSITORY,
+            source_id=f"repository:{operation}:boundary-test",
+            status=SourceStatus.OK,
+            content=content,
+            content_sha256=hashlib.sha256(content.encode()).hexdigest(),
+            allowed_resources=("repository:logs/checkout.log",),
+        )
+
+    def list_files(self, path: str = ".") -> SourceResult:
         del path
-        return object()
+        return self._result("list", "logs/checkout.log")
 
-    def read_file(self, path: str, *, offset: int = 0, limit: int | None = None) -> object:
+    def read_file(
+        self,
+        path: str,
+        *,
+        offset: int = 0,
+        limit: int | None = None,
+    ) -> SourceResult:
         del path, offset, limit
-        return object()
+        return self._result("read", "synthetic boundary source")
 
-    def search(self, query: str, *, path: str = ".", max_results: int = 20) -> object:
+    def search(
+        self,
+        query: str,
+        *,
+        path: str = ".",
+        max_results: int = 20,
+        _scoped_paths: frozenset[str] | None = None,
+    ) -> SourceResult:
+        del _scoped_paths
         del query, path, max_results
+        return self._result("search", "logs/checkout.log: synthetic boundary source")
+
+
+class _MonitoringClient:
+    def get(self, _resource: object) -> object:
         return object()
 
 
@@ -63,12 +95,12 @@ class _TodoRow:
 @pytest.fixture
 def starter_services(tmp_path: Path) -> ServiceBundle:
     return bootstrap_runtime(
-        agent_model=object(),
+        agent_model=FiniteScriptedChatModel(script=[AIMessage(content="unused")]),
         summarizer_model=DeterministicSummaryModel(),
         embeddings=DeterministicEmbeddings(),
         retriever=object(),
         source_service=_SourceService(),
-        monitoring_client=object(),
+        monitoring_client=_MonitoringClient(),
         procedure_workspace=tmp_path / "procedures",
         scope_secret=b"clearly-fake-boundary-scope-key-01",
         clock=DeterministicClock(),
@@ -118,7 +150,11 @@ def _exercise_agent(services: ServiceBundle, _context: RuntimeContext) -> None:
 
 def _exercise_source(services: ServiceBundle, context: RuntimeContext) -> None:
     tool = _tool_by_name(build_source_tools(services), "list_sources")
-    _call_tool(tool, path=".", runtime=_tool_runtime(services, context))
+    services.evidence_registry.begin_turn(context)
+    try:
+        _call_tool(tool, path=".", runtime=_tool_runtime(services, context))
+    finally:
+        services.evidence_registry.abort_turn(context)
 
 
 def _exercise_memory(services: ServiceBundle, context: RuntimeContext) -> None:

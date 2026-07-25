@@ -13,6 +13,7 @@ from eval.live import (
     LiveSettings,
     ProviderRateLimitError,
     ToolUsePolicy,
+    _quarantined_segments_from_messages,
     _visible_source_content_by_evidence_id,
     load_live_scenarios,
     run_live_checks,
@@ -248,7 +249,7 @@ def test_valid_no_answer_refusal_needs_no_semantic_claim_judgment() -> None:
         evidence=(),
         evidence_excerpts=(),
     )
-    judge = _JudgeTransport({"supported": True, "rationale": "safe refusal"})
+    judge = _JudgeTransport({"supported": False, "rationale": "must not be called"})
 
     rows = run_live_scenario(
         scenario,
@@ -257,7 +258,7 @@ def test_valid_no_answer_refusal_needs_no_semantic_claim_judgment() -> None:
     )
 
     assert [row.state for row in rows] == [ResultState.PASS, ResultState.PASS]
-    assert judge.calls == 1
+    assert judge.calls == 0
 
 
 def test_live_scenarios_preserve_claims_quarantine_and_tool_policy() -> None:
@@ -270,8 +271,49 @@ def test_live_scenarios_preserve_claims_quarantine_and_tool_policy() -> None:
         "get_monitoring",
         "read_source",
     )
+    assert scenarios["checkout-timeout-incident"].required_resources == (
+        "repository:config/service.toml",
+        "monitoring:dependencies",
+        "runbook:rb-dependency-timeouts",
+    )
     assert scenarios["checkout-no-answer"].tool_use is ToolUsePolicy.FORBIDDEN
     assert scenarios["checkout-poisoned"].quarantined_segments
+    assert scenarios["checkout-poisoned"].required_tools == ("search_sources",)
+
+
+def test_live_resource_check_uses_evidence_authority_for_opaque_source_ids() -> None:
+    resource = "repository:config/service.toml"
+    evidence = replace(
+        _evidence("evidence-live-opaque", SourceFamily.REPOSITORY),
+        provenance=ProvenanceRef(
+            source_family=SourceFamily.REPOSITORY,
+            source_id="repository:read:opaque-digest",
+            content_sha256="a" * 64,
+        ),
+        allowed_resources=(resource,),
+    )
+    scenario = LiveScenario(
+        scenario_id="live-opaque-resource",
+        question="Refuse after the scoped source attempt.",
+        allowed_source_families=frozenset(),
+        required_source_families=0,
+        allowed_resources=(resource,),
+        required_resources=(resource,),
+    )
+    outcome = replace(
+        _outcome(),
+        answer="Insufficient evidence to answer safely.",
+        evidence=(evidence,),
+        evidence_excerpts=(),
+    )
+
+    rows = run_live_scenario(
+        scenario,
+        agent_transport=_AgentTransport(outcome),
+        judge_transport=_JudgeTransport({"supported": True, "rationale": "safe refusal"}),
+    )
+
+    assert [row.state for row in rows] == [ResultState.PASS, ResultState.PASS]
 
 
 def test_live_tool_policy_distinguishes_required_and_forbidden_scenarios() -> None:
@@ -309,6 +351,33 @@ def test_live_tool_policy_distinguishes_required_and_forbidden_scenarios() -> No
 
     assert required_rows[0].state is ResultState.FAIL
     assert forbidden_rows[0].state is ResultState.FAIL
+
+
+def test_live_required_probe_accepts_safe_policy_block_after_source_attempt() -> None:
+    scenario = LiveScenario(
+        scenario_id="live-required-block",
+        question="Inspect one scoped source, then refuse if policy blocks it.",
+        allowed_source_families=frozenset(),
+        required_source_families=0,
+        required_tools=("search_sources",),
+        tool_use=ToolUsePolicy.REQUIRED,
+    )
+    outcome = replace(
+        _outcome(),
+        answer="Відповідь недоступна.",
+        evidence=(_outcome().evidence[0],),
+        evidence_excerpts=(),
+        turn_status=EventStatus.BLOCKED,
+        tool_names=("search_sources",),
+    )
+
+    rows = run_live_scenario(
+        scenario,
+        agent_transport=_AgentTransport(outcome),
+        judge_transport=_JudgeTransport({"supported": False, "rationale": "unused"}),
+    )
+
+    assert [row.state for row in rows] == [ResultState.PASS, ResultState.PASS]
 
 
 def test_missing_judge_excerpt_does_not_relabel_valid_citations() -> None:
@@ -362,6 +431,22 @@ def test_live_transport_recovers_verified_content_from_visible_tool_json() -> No
         "evidence-monitoring": "Synthetic monitoring evidence.",
         "evidence-runbook": "Synthetic runbook evidence.",
     }
+
+
+def test_live_transport_recovers_quarantine_markers_from_serialized_artifacts() -> None:
+    messages = [
+        ToolMessage(
+            content="synthetic quarantined result",
+            tool_call_id="tool-live-quarantined",
+            artifact={
+                "quarantined_segments": ["segment-source-maintenance-001"],
+            },
+        )
+    ]
+
+    assert _quarantined_segments_from_messages(messages) == (
+        "segment-source-maintenance-001",
+    )
 
 
 def test_live_valid_two_family_subset_is_judged_with_bounded_payload() -> None:

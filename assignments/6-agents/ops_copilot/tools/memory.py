@@ -5,9 +5,10 @@ from __future__ import annotations
 import unicodedata
 from typing import Annotated, Literal
 
-from langchain.tools import ToolRuntime
+from langchain.tools import InjectedToolArg, ToolRuntime
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from ops_copilot.contracts import StarterTodo, StarterTodoNotImplementedError
 from ops_scaffold.contracts import RuntimeContext, ServiceBundle
@@ -20,10 +21,15 @@ EvidenceId = Annotated[
         pattern=r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}",
     ),
 ]
+RuntimeInput = Annotated[
+    SkipJsonSchema[ToolRuntime[RuntimeContext]],
+    InjectedToolArg,
+]
 
 
 class _StrictInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+    runtime: RuntimeInput
 
 
 class _SaveFactInput(_StrictInput):

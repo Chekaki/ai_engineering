@@ -62,6 +62,15 @@ class GuidedCompactionMiddleware(AgentMiddleware):
             self._compaction_count += 1
             return self._compaction_count
 
+    def wrap_model_call(
+        self,
+        request: object,
+        handler: Callable[[object], object],
+    ) -> object:
+        """Keep the synchronous middleware chain available around ``before_model``."""
+
+        return handler(request)
+
     def before_model(
         self,
         state: Mapping[str, object],

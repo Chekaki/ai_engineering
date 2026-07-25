@@ -4,19 +4,26 @@ from __future__ import annotations
 
 import unicodedata
 from pathlib import PurePosixPath
-from typing import Literal
+from typing import Annotated, Literal
 
-from langchain.tools import ToolRuntime
+from langchain.tools import InjectedToolArg, ToolRuntime
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from ops_copilot.contracts import StarterTodo, StarterTodoNotImplementedError
 from ops_copilot.guardrails.evidence import EvidenceAction, validate_evidence_action
 from ops_scaffold.contracts import RuntimeContext, ServiceBundle, SourceResult
 
+RuntimeInput = Annotated[
+    SkipJsonSchema[ToolRuntime[RuntimeContext]],
+    InjectedToolArg,
+]
+
 
 class _StrictInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+    runtime: RuntimeInput
 
 
 class _ListSourceInput(_StrictInput):
@@ -177,9 +184,12 @@ def _require_runtime(runtime: ToolRuntime[RuntimeContext]) -> None:
 
 def _bounded_relative_path(value: str) -> str:
     normalized = unicodedata.normalize("NFC", value)
+    if normalized.startswith("repository:"):
+        normalized = normalized.removeprefix("repository:")
     pure = PurePosixPath(normalized)
     if (
-        _contains_control(normalized)
+        not normalized
+        or _contains_control(normalized)
         or normalized.startswith(("/", "\\"))
         or "\\" in normalized
         or pure.is_absolute()

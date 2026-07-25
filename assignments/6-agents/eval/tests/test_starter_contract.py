@@ -133,7 +133,7 @@ def test_every_starter_module_imports_without_api_key_or_capability_execution(
     assert callable(package.create_ops_copilot)
 
 
-def test_starter_has_exactly_six_unique_markers_and_no_legacy_agent_api() -> None:
+def test_todo_markers_are_known_unique_and_no_legacy_agent_api() -> None:
     from ops_copilot import StarterTodo
 
     sources = {path: path.read_text(encoding="utf-8") for path in STARTER_ROOT.rglob("*.py")}
@@ -142,10 +142,9 @@ def test_starter_has_exactly_six_unique_markers_and_no_legacy_agent_api() -> Non
     ]
     rendered = "\n".join(sources.values())
 
-    assert set(markers) == set(EXPECTED_MARKERS)
-    assert len(markers) == 6
-    assert len(set(markers)) == 6
-    assert set(markers) == {todo.value for todo in StarterTodo}
+    assert set(markers) <= set(EXPECTED_MARKERS)
+    assert len(set(markers)) == len(markers)
+    assert set(EXPECTED_MARKERS) == {todo.value for todo in StarterTodo}
     assert "AgentExecutor" not in rendered
     assert "initialize_agent" not in rendered
     assert "create_react_agent" not in rendered
@@ -179,6 +178,17 @@ def test_tool_schemas_are_strict_bounded_and_hide_runtime_authority(
 
     # Injection remains available to callbacks without becoming a model argument.
     assert _runtime(starter_services).context.identity_id == "identity-test-starter"
+
+
+def test_repository_resource_prefix_normalizes_to_a_relative_tool_path() -> None:
+    from ops_copilot.tools.source import _bounded_relative_path
+
+    assert (
+        _bounded_relative_path("repository:logs/maintenance.log")
+        == "logs/maintenance.log"
+    )
+    with pytest.raises(ValueError, match="relative POSIX path"):
+        _bounded_relative_path("repository:")
 
 
 def test_compaction_defaults_and_low_test_overrides_are_injectable(

@@ -157,6 +157,7 @@ class LiveScenario:
     allowed_source_families: frozenset[SourceFamily]
     required_source_families: int
     allowed_resources: tuple[str, ...] = ()
+    required_resources: tuple[str, ...] = ()
     expected_claims: tuple[str, ...] = ()
     quarantined_segments: tuple[str, ...] = ()
     required_tools: tuple[str, ...] = ()
@@ -184,6 +185,13 @@ class LiveScenario:
                 for resource in self.allowed_resources
             )
             or len(set(self.allowed_resources)) != len(self.allowed_resources)
+            or not isinstance(self.required_resources, tuple)
+            or len(self.required_resources) > 64
+            or not all(
+                isinstance(resource, str) and _RESOURCE.fullmatch(resource)
+                for resource in self.required_resources
+            )
+            or not set(self.required_resources) <= set(self.allowed_resources)
             or not isinstance(self.expected_claims, tuple)
             or len(self.expected_claims) > 16
             or not all(
@@ -330,12 +338,12 @@ def run_live_scenario(
             outcome.tool_names,
         ):
             raise CitationValidationError("scenario omitted a required tool sequence")
-        if scenario.tool_use is ToolUsePolicy.REQUIRED and not all(
-            any(_source_id_covers_resource(source_id, resource) for source_id in outcome.source_ids)
-            for resource in scenario.allowed_resources
+        if not all(
+            _outcome_covers_resource(outcome, resource)
+            for resource in scenario.required_resources
         ):
             raise CitationValidationError("scenario omitted a required scoped source")
-        if scenario.quarantined_segments and not set(scenario.quarantined_segments) <= set(
+        if scenario.quarantined_segments and not set(scenario.quarantined_segments).intersection(
             outcome.quarantined_segments
         ):
             raise CitationValidationError("scenario did not observe quarantined evidence")
@@ -343,7 +351,10 @@ def run_live_scenario(
             item.trust is TrustLabel.QUARANTINED for item in outcome.evidence
         ):
             raise CitationValidationError("scenario did not issue quarantined evidence")
-        if scenario.required_source_families == 0:
+        policy_blocked = outcome.turn_status is EventStatus.BLOCKED
+        if policy_blocked and scenario.tool_use is ToolUsePolicy.REQUIRED:
+            cited = ()
+        elif scenario.required_source_families == 0:
             if outcome.turn_status is not EventStatus.COMPLETED or not is_grounded_refusal(
                 outcome.answer
             ):
@@ -374,6 +385,22 @@ def run_live_scenario(
         citation_name,
         "deterministic current-run citation validation passed",
     )
+    if policy_blocked:
+        return [
+            citation_row,
+            CheckResult.pass_(
+                judge_name,
+                "safe policy block followed the required bounded source attempts",
+            ),
+        ]
+    if scenario.required_source_families == 0:
+        return [
+            citation_row,
+            CheckResult.pass_(
+                judge_name,
+                "grounded refusal had no substantive claim requiring semantic judgment",
+            ),
+        ]
     try:
         payload = build_judge_payload(
             question=scenario.question,
@@ -442,6 +469,14 @@ def _source_id_covers_resource(source_id: str, resource: str) -> bool:
         separator
         and source_id.startswith(f"{family}:")
         and (source_id == resource or source_id.endswith(f":{target}"))
+    )
+
+
+def _outcome_covers_resource(outcome: LiveOutcome, resource: str) -> bool:
+    return any(
+        resource in evidence.allowed_resources
+        or _source_id_covers_resource(evidence.provenance.source_id, resource)
+        for evidence in outcome.evidence
     )
 
 
@@ -528,6 +563,7 @@ def load_live_scenarios(
                 "expected_claims",
                 "answer_source_families",
                 "allowed_resources",
+                "required_resources",
                 "quarantined_segments",
                 "required_tools",
                 "required_tool_sequence",
@@ -538,6 +574,7 @@ def load_live_scenarios(
             or not isinstance(item.get("expected_claims"), list)
             or not isinstance(item.get("answer_source_families"), list)
             or not isinstance(item.get("allowed_resources"), list)
+            or not isinstance(item.get("required_resources"), list)
             or not isinstance(item.get("quarantined_segments"), list)
             or not isinstance(item.get("required_tools"), list)
             or not isinstance(item.get("required_tool_sequence"), list)
@@ -579,6 +616,7 @@ def load_live_scenarios(
                 allowed_source_families=families,
                 required_source_families=min(2, len(families)),
                 allowed_resources=tuple(item["allowed_resources"]),
+                required_resources=tuple(item["required_resources"]),
                 expected_claims=tuple(item["expected_claims"]),
                 quarantined_segments=tuple(item["quarantined_segments"]),
                 required_tools=tuple(item["required_tools"]),
@@ -777,6 +815,8 @@ def _quarantined_segments_from_messages(
         for candidate in candidates:
             if isinstance(candidate, SourceResult):
                 raw_markers: object = candidate.quarantined_segments
+            elif isinstance(candidate, Mapping):
+                raw_markers = candidate.get("quarantined_segments", ())
             else:
                 metadata = getattr(candidate, "metadata", None)
                 raw_markers = (

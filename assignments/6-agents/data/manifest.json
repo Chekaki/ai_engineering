@@ -21,12 +21,12 @@
       "path": "runbooks/index/vectors.json"
     },
     {
-      "bytes": 3549,
-      "content_sha256": "71cf0f27a83be4e577cda025f1145f2de158def6475be9d298e453bb9fcb9fcc",
+      "bytes": 3906,
+      "content_sha256": "c774bba191da22f4f6f2aa8807203ac13b892fc48ddc0f7ced5aa446a131a236",
       "path": "eval/scenarios.json"
     }
   ],
-  "logical_digest": "44267072170e3b2d84b71821a9da97152cec46018c09def29283ca38847f5cd2",
+  "logical_digest": "b2f21954d58b7cf356e9a6901c6f1eb79ea6c6ccd564ddada6743cd2b7d5f7a3",
   "schema_version": 1,
   "synthetic": true
 }

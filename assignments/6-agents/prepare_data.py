@@ -429,6 +429,7 @@ def _validate_eval_scenarios(value: object, roots: dict[str, Path]) -> None:
             "expected_claims",
             "answer_source_families",
             "allowed_resources",
+            "required_resources",
             "quarantined_segments",
             "required_tools",
             "required_tool_sequence",
@@ -454,6 +455,8 @@ def _validate_eval_scenarios(value: object, roots: dict[str, Path]) -> None:
             <= {"repository", "monitoring", "runbook"}
             or not isinstance(scenario["allowed_resources"], list)
             or not set(scenario["allowed_resources"]) <= available
+            or not isinstance(scenario["required_resources"], list)
+            or not set(scenario["required_resources"]) <= set(scenario["allowed_resources"])
             or not isinstance(scenario["quarantined_segments"], list)
         ):
             raise DataPreparationError("eval scenario values are invalid")

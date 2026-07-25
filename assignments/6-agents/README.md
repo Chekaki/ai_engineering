@@ -29,7 +29,9 @@ Chainlit UI опційний і не оцінюється.
 - `eval.py` перевіряє поведінку системи й формує Capability Ledger;
 - у `ops_copilot/` залишено рівно шість TODO, які треба реалізувати.
 
-Не змінюйте межі TODO і не додавайте нових маркерів незавершеної роботи.
+Не переміщуйте public TODO boundaries і не додавайте нових маркерів
+незавершеної роботи. Після реалізації наявний `# TODO(U4-...)` marker можна
+залишити або видалити — evaluator визначає готовність за поведінкою.
 
 ### Короткий словник
 
@@ -242,6 +244,9 @@ policy потрібна source і memory tools, а agent composition зручн�
 [Pydantic validators](https://docs.pydantic.dev/latest/concepts/validators/).
 Tool має повернути і видимий для моделі текст, і artifact. Видимий текст
 залишається untrusted data; authority живе тільки в evidence registry.
+Hidden `ToolRuntime` injection уже підключено в strict Pydantic schemas через
+`RuntimeInput`; не додавайте `runtime`, identity або scope до model-visible
+arguments.
 
 ### TODO 3: реалізуйте пам’ять фактів
 
@@ -308,6 +313,8 @@ record із version/hash/evidence provenance у trusted `ProcedureService`.
 
 Якщо один неподільний turn перевищує hard ceiling, middleware має безпечно
 заблокувати подальший model call.
+Синхронний `wrap_model_call` passthrough уже надано starter-ом; TODO 5 змінює
+лише рішення та update у `before_model`.
 
 Почніть з `ops_copilot/middleware/compaction.py`,
 `ops_scaffold/message_groups.py` і `TokenBudgets`. Корисна документація:
@@ -472,6 +479,10 @@ reserve нижчим за hard ceiling і повторно запустіть co
 - блокування prompt injection;
 - видачу evidence, citations і grounded refusal;
 - безпечні metadata events.
+
+Core eval детерміновано перевіряє citation integrity, current-run scope і
+канонічні synthetic claims. Semantic support довільної free-form відповіді
+окремо оцінює лише optional live judge (`eval.py --full`).
 
 - `PASS` — capability спостерігалася під час детермінованого виконання.
 - `FAIL` — перевірка не пройшла або потрібну поведінку не вдалося спостерігати.
