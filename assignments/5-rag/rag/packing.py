@@ -6,8 +6,19 @@ v2 (which just joined text[:500] with blank lines).
 """
 
 from __future__ import annotations
-
+from collections import defaultdict
+from itertools import zip_longest
 from . import config
+
+_tokenizer = None
+
+
+def _get_tokenizer():
+    global _tokenizer
+    if _tokenizer is None:
+        from transformers import AutoTokenizer
+        _tokenizer = AutoTokenizer.from_pretrained(f"sentence-transformers/{config.ENCODER_NAME}")
+    return _tokenizer
 
 
 def assemble_context(results: list[dict], token_budget: int = config.TOKEN_BUDGET) -> str:
@@ -30,5 +41,37 @@ def assemble_context(results: list[dict], token_budget: int = config.TOKEN_BUDGE
     Returns the assembled context string. The [Source: Title] markers here are
     what the faithfulness validator (TODO 5) checks against.
     """
-    # TODO 3: implement context packing (dedup, diverse sources, citation ids, budget).
-    raise NotImplementedError("TODO 3: implement assemble_context")
+
+    if not results:
+        return ""
+    
+    tokenizer = _get_tokenizer()
+
+    unique = []
+    seen = set()
+    for r in results:
+        key = " ".join(r["text"].split()).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(r)
+      
+    by_title = defaultdict(list)
+    for r in unique:
+        by_title[r["article_title"]].append(r)
+   
+    ordered = []
+    for tier in zip_longest(*by_title.values()):
+        ordered.extend(r for r in tier if r is not None)
+   
+    blocks = []
+    used = 0
+    for r in ordered:
+        block = f"[Source: {r['article_title']}]\n{r['text']}"
+        cost = len(tokenizer.encode(block))
+        if blocks and used + cost > token_budget:
+            break
+        blocks.append(block)
+        used += cost
+    
+    return "\n\n".join(blocks)

@@ -32,7 +32,18 @@ def chunk_text(text: str, chunk_size: int = config.CHUNK_SIZE, overlap: int = co
     #   - Walk the text in windows of `chunk_size`, stepping by (chunk_size - overlap).
     #   - Skip empty/whitespace-only chunks.
     #   - Bonus: split on sentence/paragraph boundaries instead of raw characters.
-    raise NotImplementedError("TODO 1a: implement chunk_text")
+
+    result = []
+    i = 0
+    step = chunk_size - overlap
+    while i < len(text):
+        chunk = text[i : i + chunk_size].strip()
+        if chunk:
+            result.append(chunk)
+        if i + chunk_size >= len(text):
+            break
+        i += step
+    return result
 
 
 def build_index(deps: WikiDeps, chunk_size: int = config.CHUNK_SIZE, overlap: int = config.CHUNK_OVERLAP) -> None:
@@ -48,5 +59,11 @@ def build_index(deps: WikiDeps, chunk_size: int = config.CHUNK_SIZE, overlap: in
         - Bonus (Contextual Retrieval, slides 6.1/21-22): prepend an LLM-written
           1-3 sentence context to each chunk before embedding.
     """
-    # TODO 1b: build the chunk index.
-    raise NotImplementedError("TODO 1b: implement build_index")
+    deps.chunks = []
+    chunk_index = 0
+    for i, title in enumerate(deps.titles):
+        for text in chunk_text(deps.texts[i], chunk_size, overlap):
+            deps.chunks.append({ "chunk_id": chunk_index, "article_title": title, "text": text })
+            chunk_index += 1
+        
+    deps.chunk_embeddings = deps.encoder.encode([chunk["text"] for chunk in deps.chunks], convert_to_numpy=True)
